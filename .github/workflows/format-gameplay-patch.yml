@@ -1,0 +1,43 @@
+name: Format gameplay feedback patch
+
+on:
+  push:
+    branches: ["agent/gameplay-gesture-feedback"]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/gameplay-gesture-feedback
+      - name: Restore Kotlin indentation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path("app/src/main/java/ca/hdclark/mtbsim/ui/MountainBikeGameView.kt")
+          text = source.read_text()
+          start = text.index("    private fun drawBike(canvas: Canvas, state: GameSnapshot) {")
+          end = text.index("    private fun drawTouchGlow(canvas: Canvas) {", start)
+          lines = text[start:end].splitlines(keepends=True)
+          formatted = lines[0] + "".join(
+              ("    " + line) if line.strip() else line
+              for line in lines[1:]
+          )
+          text = text[:start] + formatted + text[end:]
+          assert "    private fun drawArm" in text
+          assert "        val isRiding" in text
+          assert "    private fun drawGestureGuide" in text
+          source.write_text(text)
+          PY
+          rm .github/workflows/format-gameplay-patch.yml
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/ca/hdclark/mtbsim/ui/MountainBikeGameView.kt .github/workflows/format-gameplay-patch.yml
+          git commit -m "Format gameplay feedback implementation"
+          git push origin HEAD:agent/gameplay-gesture-feedback
