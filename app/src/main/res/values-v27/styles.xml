@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MTBsim">
+    <style name="Theme.MTBsim" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#F6B44C</item>
+        <item name="android:navigationBarColor">#10251D</item>
         <item name="android:windowLightNavigationBar">false</item>
     </style>
 </resources>
