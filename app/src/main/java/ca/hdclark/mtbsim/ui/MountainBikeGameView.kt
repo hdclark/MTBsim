@@ -486,199 +486,199 @@ class MountainBikeGameView(context: Context) : View(context) {
     }
 
     private fun drawBike(canvas: Canvas, state: GameSnapshot) {
-    val w = width.toFloat()
-    val h = height.toFloat()
-    val isRiding = state.mode == GameMode.PLAYING
-    val bob = if (isRiding) sin(state.distanceMeters * 0.58f) * h * 0.004f else 0f
-    val trailWobble = if (isRiding) sin(state.distanceMeters * 1.37f) * w * 0.0032f else 0f
-    val pedalFrequency = 7.4f + state.speedMetersPerSecond * 0.20f
-    val pedalWobble = if (isRiding) sin(state.elapsedSeconds * pedalFrequency) * w * 0.0018f else 0f
-    val cockpitWobble = (trailWobble + pedalWobble).toFloat()
-    val wobbleRotation = if (isRiding) {
-        (sin(state.distanceMeters * 1.11f) * 0.65f + sin(state.elapsedSeconds * pedalFrequency) * 0.35f).toFloat()
-    } else {
-        0f
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val isRiding = state.mode == GameMode.PLAYING
+        val bob = if (isRiding) sin(state.distanceMeters * 0.58f) * h * 0.004f else 0f
+        val trailWobble = if (isRiding) sin(state.distanceMeters * 1.37f) * w * 0.0032f else 0f
+        val pedalFrequency = 7.4f + state.speedMetersPerSecond * 0.20f
+        val pedalWobble = if (isRiding) sin(state.elapsedSeconds * pedalFrequency) * w * 0.0018f else 0f
+        val cockpitWobble = (trailWobble + pedalWobble).toFloat()
+        val wobbleRotation = if (isRiding) {
+            (sin(state.distanceMeters * 1.11f) * 0.65f + sin(state.elapsedSeconds * pedalFrequency) * 0.35f).toFloat()
+        } else {
+            0f
+        }
+        val cx =
+            w / 2f +
+                steeringVisual * w * 0.025f * GESTURE_VISUAL_AMPLIFICATION +
+                cockpitWobble
+        val barY =
+            h * 0.79f +
+                bob.toFloat() +
+                leanVisual * h * 0.018f * GESTURE_VISUAL_AMPLIFICATION
+        val frameBottomY = h * 1.24f
+        canvas.save()
+        canvas.rotate(
+            steeringVisual * 7f * GESTURE_VISUAL_AMPLIFICATION + wobbleRotation,
+            cx,
+            barY,
+        )
+
+        stroke.color = Color.rgb(40, 45, 44)
+        stroke.strokeWidth = h * 0.034f
+        canvas.drawLine(cx - w * 0.18f, barY, cx + w * 0.18f, barY, stroke)
+        stroke.color = Color.rgb(229, 162, 59)
+        stroke.strokeWidth = h * 0.014f
+        canvas.drawLine(cx - w * 0.16f, barY - h * 0.004f, cx + w * 0.16f, barY - h * 0.004f, stroke)
+
+        // Keep the frame extending well below the viewport so amplified movement never exposes its edge.
+        stroke.color = Color.rgb(48, 54, 52)
+        stroke.strokeWidth = h * 0.025f
+        canvas.drawLine(cx, barY, cx, frameBottomY, stroke)
+        stroke.color = Color.rgb(242, 178, 65)
+        stroke.strokeWidth = h * 0.020f
+        canvas.drawLine(cx, barY + h * 0.035f, cx, frameBottomY, stroke)
+
+        drawArm(canvas, cx - w * 0.17f, barY, -1f)
+        drawArm(canvas, cx + w * 0.17f, barY, 1f)
+
+        paint.color = Color.rgb(32, 37, 36)
+        canvas.drawRoundRect(cx - w * 0.21f, barY - h * 0.025f, cx - w * 0.14f, barY + h * 0.025f, 18f, 18f, paint)
+        canvas.drawRoundRect(cx + w * 0.14f, barY - h * 0.025f, cx + w * 0.21f, barY + h * 0.025f, 18f, 18f, paint)
+        canvas.restore()
     }
-    val cx =
-        w / 2f +
-            steeringVisual * w * 0.025f * GESTURE_VISUAL_AMPLIFICATION +
-            cockpitWobble
-    val barY =
-        h * 0.79f +
-            bob.toFloat() +
-            leanVisual * h * 0.018f * GESTURE_VISUAL_AMPLIFICATION
-    val frameBottomY = h * 1.24f
-    canvas.save()
-    canvas.rotate(
-        steeringVisual * 7f * GESTURE_VISUAL_AMPLIFICATION + wobbleRotation,
-        cx,
-        barY,
-    )
 
-    stroke.color = Color.rgb(40, 45, 44)
-    stroke.strokeWidth = h * 0.034f
-    canvas.drawLine(cx - w * 0.18f, barY, cx + w * 0.18f, barY, stroke)
-    stroke.color = Color.rgb(229, 162, 59)
-    stroke.strokeWidth = h * 0.014f
-    canvas.drawLine(cx - w * 0.16f, barY - h * 0.004f, cx + w * 0.16f, barY - h * 0.004f, stroke)
-
-    // Keep the frame extending well below the viewport so amplified movement never exposes its edge.
-    stroke.color = Color.rgb(48, 54, 52)
-    stroke.strokeWidth = h * 0.025f
-    canvas.drawLine(cx, barY, cx, frameBottomY, stroke)
-    stroke.color = Color.rgb(242, 178, 65)
-    stroke.strokeWidth = h * 0.020f
-    canvas.drawLine(cx, barY + h * 0.035f, cx, frameBottomY, stroke)
-
-    drawArm(canvas, cx - w * 0.17f, barY, -1f)
-    drawArm(canvas, cx + w * 0.17f, barY, 1f)
-
-    paint.color = Color.rgb(32, 37, 36)
-    canvas.drawRoundRect(cx - w * 0.21f, barY - h * 0.025f, cx - w * 0.14f, barY + h * 0.025f, 18f, 18f, paint)
-    canvas.drawRoundRect(cx + w * 0.14f, barY - h * 0.025f, cx + w * 0.21f, barY + h * 0.025f, 18f, 18f, paint)
-    canvas.restore()
-}
-
-private fun drawArm(canvas: Canvas, handX: Float, handY: Float, side: Float) {
-    val w = width.toFloat()
-    val h = height.toFloat()
-    val elbowX = handX + side * w * 0.07f
-    val elbowY = handY + h * 0.13f
-    val shoulderX = handX + side * w * 0.17f
-    val shoulderY = h * 1.18f
-    stroke.color = Color.rgb(222, 167, 121)
-    stroke.strokeWidth = h * 0.075f
-    canvas.drawLine(shoulderX, shoulderY, elbowX, elbowY, stroke)
-    canvas.drawLine(elbowX, elbowY, handX, handY, stroke)
-    stroke.color = Color.rgb(61, 111, 118)
-    stroke.strokeWidth = h * 0.095f
-    canvas.drawLine(shoulderX, shoulderY, elbowX + side * w * 0.008f, elbowY + h * 0.025f, stroke)
-    paint.color = Color.rgb(40, 47, 47)
-    canvas.drawCircle(handX, handY, h * 0.037f, paint)
-    paint.color = Color.argb(100, 255, 236, 202)
-    canvas.drawCircle(handX - side * h * 0.01f, handY - h * 0.012f, h * 0.010f, paint)
-}
-
-private fun drawGestureGuide(canvas: Canvas, state: GameSnapshot) {
-    if (downTime != 0L || state.mode != GameMode.PLAYING) return
-    val feature = state.currentFeature ?: return
-    if (!feature.activated || feature.completed) return
-    val stepIndex = feature.stepIndex.coerceAtMost(feature.rule.steps.lastIndex)
-    val kind = feature.rule.steps[stepIndex].kind
-    val key = feature.id * 31L + stepIndex
-    val now = SystemClock.uptimeMillis()
-    if (gestureGuideKey != key) {
-        gestureGuideKey = key
-        gestureGuideStartedAt = now
+    private fun drawArm(canvas: Canvas, handX: Float, handY: Float, side: Float) {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val elbowX = handX + side * w * 0.07f
+        val elbowY = handY + h * 0.13f
+        val shoulderX = handX + side * w * 0.17f
+        val shoulderY = h * 1.18f
+        stroke.color = Color.rgb(222, 167, 121)
+        stroke.strokeWidth = h * 0.075f
+        canvas.drawLine(shoulderX, shoulderY, elbowX, elbowY, stroke)
+        canvas.drawLine(elbowX, elbowY, handX, handY, stroke)
+        stroke.color = Color.rgb(61, 111, 118)
+        stroke.strokeWidth = h * 0.095f
+        canvas.drawLine(shoulderX, shoulderY, elbowX + side * w * 0.008f, elbowY + h * 0.025f, stroke)
+        paint.color = Color.rgb(40, 47, 47)
+        canvas.drawCircle(handX, handY, h * 0.037f, paint)
+        paint.color = Color.argb(100, 255, 236, 202)
+        canvas.drawCircle(handX - side * h * 0.01f, handY - h * 0.012f, h * 0.010f, paint)
     }
-    val phase = ((now - gestureGuideStartedAt) % GESTURE_GUIDE_CYCLE_MS).toFloat() / GESTURE_GUIDE_CYCLE_MS
-    val w = width.toFloat()
-    val h = height.toFloat()
-    val radius = min(w, h) * 0.034f
 
-    when (kind) {
-        GestureKind.TAP_LEFT -> drawTapGuide(canvas, w * 0.33f, h * 0.79f, radius, phase)
-        GestureKind.TAP_RIGHT -> drawTapGuide(canvas, w * 0.67f, h * 0.79f, radius, phase)
-        GestureKind.TAP_CENTER -> drawTapGuide(canvas, w * 0.50f, h * 0.68f, radius, phase)
-        GestureKind.SWIPE_LEFT -> drawSwipeGuide(canvas, w * 0.54f, h * 0.66f, w * 0.31f, h * 0.66f, radius, phase)
-        GestureKind.SWIPE_RIGHT -> drawSwipeGuide(canvas, w * 0.46f, h * 0.66f, w * 0.69f, h * 0.66f, radius, phase)
-        GestureKind.SWIPE_UP -> drawSwipeGuide(canvas, w * 0.50f, h * 0.75f, w * 0.50f, h * 0.52f, radius, phase)
-        GestureKind.SWIPE_DOWN -> drawSwipeGuide(canvas, w * 0.50f, h * 0.56f, w * 0.50f, h * 0.80f, radius, phase)
-        GestureKind.HOLD_CENTER -> drawHoldGuide(canvas, w * 0.50f, h * 0.66f, radius, phase)
-        GestureKind.RELEASE_CENTER -> drawReleaseGuide(canvas, w * 0.50f, h * 0.66f, radius, phase)
-        GestureKind.TWO_FINGER_SWIPE_DOWN -> {
-            drawSwipeGuide(canvas, w * 0.44f, h * 0.55f, w * 0.44f, h * 0.79f, radius, phase)
-            drawSwipeGuide(canvas, w * 0.56f, h * 0.55f, w * 0.56f, h * 0.79f, radius, phase)
+    private fun drawGestureGuide(canvas: Canvas, state: GameSnapshot) {
+        if (downTime != 0L || state.mode != GameMode.PLAYING) return
+        val feature = state.currentFeature ?: return
+        if (!feature.activated || feature.completed) return
+        val stepIndex = feature.stepIndex.coerceAtMost(feature.rule.steps.lastIndex)
+        val kind = feature.rule.steps[stepIndex].kind
+        val key = feature.id * 31L + stepIndex
+        val now = SystemClock.uptimeMillis()
+        if (gestureGuideKey != key) {
+            gestureGuideKey = key
+            gestureGuideStartedAt = now
+        }
+        val phase = ((now - gestureGuideStartedAt) % GESTURE_GUIDE_CYCLE_MS).toFloat() / GESTURE_GUIDE_CYCLE_MS
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val radius = min(w, h) * 0.034f
+
+        when (kind) {
+            GestureKind.TAP_LEFT -> drawTapGuide(canvas, w * 0.33f, h * 0.79f, radius, phase)
+            GestureKind.TAP_RIGHT -> drawTapGuide(canvas, w * 0.67f, h * 0.79f, radius, phase)
+            GestureKind.TAP_CENTER -> drawTapGuide(canvas, w * 0.50f, h * 0.68f, radius, phase)
+            GestureKind.SWIPE_LEFT -> drawSwipeGuide(canvas, w * 0.54f, h * 0.66f, w * 0.31f, h * 0.66f, radius, phase)
+            GestureKind.SWIPE_RIGHT -> drawSwipeGuide(canvas, w * 0.46f, h * 0.66f, w * 0.69f, h * 0.66f, radius, phase)
+            GestureKind.SWIPE_UP -> drawSwipeGuide(canvas, w * 0.50f, h * 0.75f, w * 0.50f, h * 0.52f, radius, phase)
+            GestureKind.SWIPE_DOWN -> drawSwipeGuide(canvas, w * 0.50f, h * 0.56f, w * 0.50f, h * 0.80f, radius, phase)
+            GestureKind.HOLD_CENTER -> drawHoldGuide(canvas, w * 0.50f, h * 0.66f, radius, phase)
+            GestureKind.RELEASE_CENTER -> drawReleaseGuide(canvas, w * 0.50f, h * 0.66f, radius, phase)
+            GestureKind.TWO_FINGER_SWIPE_DOWN -> {
+                drawSwipeGuide(canvas, w * 0.44f, h * 0.55f, w * 0.44f, h * 0.79f, radius, phase)
+                drawSwipeGuide(canvas, w * 0.56f, h * 0.55f, w * 0.56f, h * 0.79f, radius, phase)
+            }
         }
     }
-}
 
-private fun drawTapGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
-    val local = (phase / 0.62f).coerceIn(0f, 1f)
-    if (phase > 0.72f) return
-    val pulse = sin(local * PI).toFloat().coerceAtLeast(0f)
-    drawFingerCircle(canvas, x, y, radius, 0.28f + pulse * 0.72f, 1.12f - pulse * 0.20f)
-    drawFingerRipple(canvas, x, y, radius, local, 0.55f)
-}
-
-private fun drawHoldGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
-    val pulse = (0.5f + 0.5f * sin(phase * PI * 2f)).toFloat()
-    drawFingerCircle(canvas, x, y, radius, 0.78f, 0.92f + pulse * 0.08f)
-    drawFingerRipple(canvas, x, y, radius, phase, 0.50f)
-}
-
-private fun drawReleaseGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
-    if (phase < 0.55f) {
-        val pulse = (0.5f + 0.5f * sin(phase * PI * 4f)).toFloat()
-        drawFingerCircle(canvas, x, y, radius, 0.82f, 0.92f + pulse * 0.06f)
-    } else if (phase < 0.82f) {
-        val release = ((phase - 0.55f) / 0.27f).coerceIn(0f, 1f)
-        drawFingerCircle(canvas, x, y, radius, 1f - release, 1f + release * 0.55f)
+    private fun drawTapGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
+        val local = (phase / 0.62f).coerceIn(0f, 1f)
+        if (phase > 0.72f) return
+        val pulse = sin(local * PI).toFloat().coerceAtLeast(0f)
+        drawFingerCircle(canvas, x, y, radius, 0.28f + pulse * 0.72f, 1.12f - pulse * 0.20f)
+        drawFingerRipple(canvas, x, y, radius, local, 0.55f)
     }
-}
 
-private fun drawSwipeGuide(
-    canvas: Canvas,
-    startX: Float,
-    startY: Float,
-    endX: Float,
-    endY: Float,
-    radius: Float,
-    phase: Float,
-) {
-    val travel = ((phase - 0.10f) / 0.62f).coerceIn(0f, 1f)
-    if (phase > 0.82f) return
-    val eased = travel * travel * (3f - 2f * travel)
-    val alpha = min((travel / 0.16f).coerceAtMost(1f), ((1f - travel) / 0.16f).coerceAtMost(1f)).coerceAtLeast(0f)
-    paint.shader = null
-    paint.color = Color.argb(48, 255, 255, 255)
-    canvas.drawCircle(startX, startY, radius * 0.82f, paint)
-    for (ghost in 3 downTo 1) {
-        val ghostTravel = (travel - ghost * 0.08f).coerceIn(0f, 1f)
-        val ghostEased = ghostTravel * ghostTravel * (3f - 2f * ghostTravel)
-        val gx = startX + (endX - startX) * ghostEased
-        val gy = startY + (endY - startY) * ghostEased
-        drawFingerCircle(canvas, gx, gy, radius, alpha * (0.12f + ghost * 0.08f), 0.84f)
+    private fun drawHoldGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
+        val pulse = (0.5f + 0.5f * sin(phase * PI * 2f)).toFloat()
+        drawFingerCircle(canvas, x, y, radius, 0.78f, 0.92f + pulse * 0.08f)
+        drawFingerRipple(canvas, x, y, radius, phase, 0.50f)
     }
-    val x = startX + (endX - startX) * eased
-    val y = startY + (endY - startY) * eased
-    drawFingerCircle(canvas, x, y, radius, alpha, 1f)
-}
 
-private fun drawFingerCircle(
-    canvas: Canvas,
-    x: Float,
-    y: Float,
-    radius: Float,
-    alpha: Float,
-    scale: Float,
-) {
-    val clampedAlpha = alpha.coerceIn(0f, 1f)
-    if (clampedAlpha <= 0f) return
-    val r = radius * scale
-    paint.shader = null
-    paint.color = Color.argb((clampedAlpha * 72f).toInt(), 255, 255, 255)
-    canvas.drawCircle(x, y, r, paint)
-    stroke.color = Color.argb((clampedAlpha * 210f).toInt(), 255, 255, 255)
-    stroke.strokeWidth = max(2f, radius * 0.11f)
-    canvas.drawCircle(x, y, r, stroke)
-    paint.color = Color.argb((clampedAlpha * 95f).toInt(), 255, 255, 255)
-    canvas.drawCircle(x, y, r * 0.28f, paint)
-}
+    private fun drawReleaseGuide(canvas: Canvas, x: Float, y: Float, radius: Float, phase: Float) {
+        if (phase < 0.55f) {
+            val pulse = (0.5f + 0.5f * sin(phase * PI * 4f)).toFloat()
+            drawFingerCircle(canvas, x, y, radius, 0.82f, 0.92f + pulse * 0.06f)
+        } else if (phase < 0.82f) {
+            val release = ((phase - 0.55f) / 0.27f).coerceIn(0f, 1f)
+            drawFingerCircle(canvas, x, y, radius, 1f - release, 1f + release * 0.55f)
+        }
+    }
 
-private fun drawFingerRipple(
-    canvas: Canvas,
-    x: Float,
-    y: Float,
-    radius: Float,
-    progress: Float,
-    maxAlpha: Float,
-) {
-    val p = progress.coerceIn(0f, 1f)
-    stroke.color = Color.argb(((1f - p) * maxAlpha * 190f).toInt(), 255, 255, 255)
-    stroke.strokeWidth = max(2f, radius * 0.08f)
-    canvas.drawCircle(x, y, radius * (1f + p * 0.85f), stroke)
-}
+    private fun drawSwipeGuide(
+        canvas: Canvas,
+        startX: Float,
+        startY: Float,
+        endX: Float,
+        endY: Float,
+        radius: Float,
+        phase: Float,
+    ) {
+        val travel = ((phase - 0.10f) / 0.62f).coerceIn(0f, 1f)
+        if (phase > 0.82f) return
+        val eased = travel * travel * (3f - 2f * travel)
+        val alpha = min((travel / 0.16f).coerceAtMost(1f), ((1f - travel) / 0.16f).coerceAtMost(1f)).coerceAtLeast(0f)
+        paint.shader = null
+        paint.color = Color.argb(48, 255, 255, 255)
+        canvas.drawCircle(startX, startY, radius * 0.82f, paint)
+        for (ghost in 3 downTo 1) {
+            val ghostTravel = (travel - ghost * 0.08f).coerceIn(0f, 1f)
+            val ghostEased = ghostTravel * ghostTravel * (3f - 2f * ghostTravel)
+            val gx = startX + (endX - startX) * ghostEased
+            val gy = startY + (endY - startY) * ghostEased
+            drawFingerCircle(canvas, gx, gy, radius, alpha * (0.12f + ghost * 0.08f), 0.84f)
+        }
+        val x = startX + (endX - startX) * eased
+        val y = startY + (endY - startY) * eased
+        drawFingerCircle(canvas, x, y, radius, alpha, 1f)
+    }
+
+    private fun drawFingerCircle(
+        canvas: Canvas,
+        x: Float,
+        y: Float,
+        radius: Float,
+        alpha: Float,
+        scale: Float,
+    ) {
+        val clampedAlpha = alpha.coerceIn(0f, 1f)
+        if (clampedAlpha <= 0f) return
+        val r = radius * scale
+        paint.shader = null
+        paint.color = Color.argb((clampedAlpha * 72f).toInt(), 255, 255, 255)
+        canvas.drawCircle(x, y, r, paint)
+        stroke.color = Color.argb((clampedAlpha * 210f).toInt(), 255, 255, 255)
+        stroke.strokeWidth = max(2f, radius * 0.11f)
+        canvas.drawCircle(x, y, r, stroke)
+        paint.color = Color.argb((clampedAlpha * 95f).toInt(), 255, 255, 255)
+        canvas.drawCircle(x, y, r * 0.28f, paint)
+    }
+
+    private fun drawFingerRipple(
+        canvas: Canvas,
+        x: Float,
+        y: Float,
+        radius: Float,
+        progress: Float,
+        maxAlpha: Float,
+    ) {
+        val p = progress.coerceIn(0f, 1f)
+        stroke.color = Color.argb(((1f - p) * maxAlpha * 190f).toInt(), 255, 255, 255)
+        stroke.strokeWidth = max(2f, radius * 0.08f)
+        canvas.drawCircle(x, y, radius * (1f + p * 0.85f), stroke)
+    }
 
     private fun drawTouchGlow(canvas: Canvas) {
         if (touchGlowAge > 0.45f) return
